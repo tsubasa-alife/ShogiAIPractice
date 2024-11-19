@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyShogiLib", "MyShogiLib\My
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyShogiLib.Tests", "MyShogiLib.Tests\MyShogiLib.Tests.csproj", "{B0F5C08A-2D14-4929-B588-04ADBAE9A5D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShogiAIPractice.Main", "ShogiAIPractice.Main\ShogiAIPractice.Main.csproj", "{381EDC11-A445-44DC-BB58-64455D2F3316}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{B0F5C08A-2D14-4929-B588-04ADBAE9A5D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0F5C08A-2D14-4929-B588-04ADBAE9A5D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0F5C08A-2D14-4929-B588-04ADBAE9A5D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{381EDC11-A445-44DC-BB58-64455D2F3316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{381EDC11-A445-44DC-BB58-64455D2F3316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{381EDC11-A445-44DC-BB58-64455D2F3316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{381EDC11-A445-44DC-BB58-64455D2F3316}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
