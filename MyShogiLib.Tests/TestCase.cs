@@ -38,6 +38,8 @@ namespace MyShogiLib.Tests
 			Assert.Equal("7g7f+", move2.ToUsi());
 			var move3 = Usi.ToMove("P*7f");
 			Assert.Equal("P*7f", move3.ToUsi());
+			Usi.TryParseMove("test*", out var move4);
+			Assert.Equal(Move.NONE, move4);
 		}
 	}
 }
