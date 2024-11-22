@@ -2,7 +2,7 @@
 using MyShogi.Model.Shogi.Core;
 using MyShogi.Model.Shogi.Converter;
 
-namespace ShogiAIPractice.Engine
+namespace ShogiAIPractice
 {
     public class Program
     {

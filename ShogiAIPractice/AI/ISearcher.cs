@@ -1,6 +1,6 @@
 using MyShogi.Model.Shogi.Core;
 
-namespace ShogiAIPractice.Engine;
+namespace ShogiAIPractice;
 
 public interface ISearcher
 {
