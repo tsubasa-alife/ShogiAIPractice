@@ -11,6 +11,8 @@ namespace MyShogi.Model.Shogi.Converter
 		/// <returns></returns>
 		public static Move ToMove(string usi)
 		{
+			if (usi == "none")
+				return Move.NONE;
 			if (usi == "resign")
 				return Move.RESIGN;
 			if (usi == "win")

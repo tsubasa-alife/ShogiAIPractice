@@ -1,23 +1,23 @@
 ﻿using MyShogi.Model.Shogi.Core;
 using MyShogi.Model.Shogi.Converter;
+using ShogiAIPractice.Engine;
 
 Initializer.Init();
 bool onGame = true;
 Position position = new Position();
 position.InitBoard();
+ISearcher searcher = new RandomAI();
 Console.WriteLine(position.Pretty());
 
 // メインループ
 while (onGame)
 {
     var command = Console.ReadLine();
-    ProcessCommand(command);
+    await ProcessCommand(command);
 }
 
-Console.WriteLine("GameEnd");
-
 // 入力されたコマンドを処理する
-void ProcessCommand(string? command)
+async Task ProcessCommand(string? command)
 {
     // コマンドがnullの場合は処理しない
     if (command == null)
@@ -28,6 +28,8 @@ void ProcessCommand(string? command)
     switch (command)
     {
         case "end":
+            Console.Clear();
+            Console.WriteLine("GameEnd");
             onGame = false;
             break;
         default:
@@ -46,6 +48,13 @@ void ProcessCommand(string? command)
                 Console.Clear();
                 Console.WriteLine(position.Pretty());
                 Console.WriteLine(move.ToUsi());
+                Console.WriteLine("AI思考中...");
+                var bestMove = await searcher.GetBestMove(position);
+                Console.WriteLine("AIの手: " + bestMove.ToUsi());
+                position.DoMove(bestMove);
+                Console.Clear();
+                Console.WriteLine(position.Pretty());
+                Console.WriteLine("AIの手: " + bestMove.ToUsi());
             }
             else
             {
