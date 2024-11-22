@@ -22,6 +22,7 @@ namespace ShogiAIPractice
             Initialize();
             var options = new Dictionary<string, string>();
             var position = new Position();
+            ISearcher ai = new RandomAI();
 
             string line;
             while ((line = Console.ReadLine()) != null)
@@ -48,6 +49,7 @@ namespace ShogiAIPractice
                         break;
 
                     case "isready":
+                        Book.Instance.Load(options);
                         Console.WriteLine("readyok");
                         Console.Out.Flush();
                         break;
@@ -143,12 +145,21 @@ namespace ShogiAIPractice
                                     throw new Exception($"Unsupported go option: option={option}");
                             }
                         }
+                        
+                        TimeManager.Instance.Start(ponder, btime, wtime, byoyomi, binc, winc, infinite, position.sideToMove);
+                        
+                        // 合法手をランダムに選ぶ
+                        var bestMove = ai.GetBestMove(position);
+                        Console.WriteLine($"bestmove {bestMove.ToUsi()}");
+                        Console.Out.Flush();
+                        
                         break;
 
                     case "stop":
                         break;
 
                     case "ponderhit":
+                        TimeManager.Instance.PonderHit();
                         break;
 
                     case "quit":

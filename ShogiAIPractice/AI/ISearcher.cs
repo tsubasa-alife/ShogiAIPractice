@@ -4,5 +4,5 @@ namespace ShogiAIPractice;
 
 public interface ISearcher
 {
-	Task<Move> GetBestMove(Position position);
+	Move GetBestMove(Position position);
 }
