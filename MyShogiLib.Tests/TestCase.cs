@@ -41,5 +41,25 @@ namespace MyShogiLib.Tests
 			Usi.TryParseMove("test*", out var move4);
 			Assert.Equal(Move.NONE, move4);
 		}
+		
+		[Fact]
+		public void TestPackedSfen()
+		{
+			Position position = new Position();
+			position.InitBoard();
+			_testOutputHelper.WriteLine(position.ToSfen());
+			
+			// 平手盤面
+			Assert.Equal(Sfens.HIRATE, position.ToSfen());
+			
+			var packedSfen = SfenConverter.Pack(position.ToSfen());
+			var position2 = new Position();
+			var sfen = SfenConverter.Unpack(packedSfen);
+			_testOutputHelper.WriteLine(sfen);
+			position2.SetSfen(sfen);
+			
+			// 正しく復元できているか？
+			Assert.Equal(Sfens.HIRATE, position2.ToSfen());
+		}
 	}
 }

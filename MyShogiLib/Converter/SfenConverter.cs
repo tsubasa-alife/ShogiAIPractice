@@ -286,7 +286,14 @@ public class SfenConverter
         }
         foreach (var k in king)
         {
-            board.Insert(k, k == king[0] ? 'K' : 'k');
+            if (k >= 0 && k <= board.Count)
+            {
+                board.Insert(k, k == king[0] ? 'K' : 'k');
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(k), "King position is out of bounds");
+            }
         }
         var hands = new List<string>();
         while (gen.MoveNext())
