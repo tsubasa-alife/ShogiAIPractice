@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MyShogi.Model.Shogi.Converter;
 
@@ -192,7 +193,8 @@ public class SfenConverter
         }
         if (sym == null) throw new InvalidOperationException("Invalid piece encoding");
         bool promoted = sym == "Gg" ? false : gen.MoveNext() && gen.Current == 1;
-        char piece = sym[gen.MoveNext() && gen.Current == 1 ? 1 : 0];
+        char[] symCharArray = sym.ToCharArray();
+        char piece = symCharArray[gen.MoveNext() && gen.Current == 1 ? 1 : 0];
         return promoted ? "+" + piece : piece.ToString();
     }
 
@@ -273,7 +275,7 @@ public class SfenConverter
 
     public static string Unpack(IEnumerable<int> psfen, int ply = 1)
     {
-        var gen = psfen.GetEnumerator();
+        var gen = Int8s2Bits(psfen).GetEnumerator();
         gen.MoveNext();
         char turn = gen.Current == 0 ? 'b' : 'w';
         int[] king = { Bits2Int(gen, 7), Bits2Int(gen, 7) };
