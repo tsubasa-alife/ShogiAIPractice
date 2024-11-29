@@ -20,7 +20,6 @@ namespace MyShogiLib.Tests
 		{
 			Position position = new Position();
 			position.InitBoard();
-			_testOutputHelper.WriteLine(position.Pretty());
 			
 			// 平手盤面
 			Assert.Equal(Sfens.HIRATE, position.ToSfen());
@@ -45,21 +44,33 @@ namespace MyShogiLib.Tests
 		[Fact]
 		public void TestPackedSfen()
 		{
+			// 盤面の初期化
 			Position position = new Position();
 			position.InitBoard();
-			_testOutputHelper.WriteLine(position.ToSfen());
 			
-			// 平手盤面
+			// 平手盤面になっているかどうか？
 			Assert.Equal(Sfens.HIRATE, position.ToSfen());
 			
+			// 平手盤面をpackしてunpackしてみる
 			var packedSfen = SfenConverter.Pack(position.ToSfen());
 			var position2 = new Position();
 			var sfen = SfenConverter.Unpack(packedSfen);
-			_testOutputHelper.WriteLine(sfen);
 			position2.SetSfen(sfen);
 			
 			// 正しく復元できているか？
 			Assert.Equal(Sfens.HIRATE, position2.ToSfen());
+			
+			// 1手指す
+			position2.DoMove(Usi.ToMove("7g7f"));
+			
+			// 1手指した局面についてもpackしてunpackしてみる
+			var packedSfen2 = SfenConverter.Pack(position2.ToSfen());
+			var position3 = new Position();
+			var sfen2 = SfenConverter.Unpack(packedSfen2);
+			position3.SetSfen(sfen2);
+			
+			// 正しく復元できているか？
+			Assert.Equal(position2.ToSfen(), position3.ToSfen());
 		}
 	}
 }

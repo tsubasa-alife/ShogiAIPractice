@@ -214,7 +214,7 @@ public class SfenConverter
                     yield return zrl.ToString();
                     zrl = 0;
                 }
-                yield return s.ToString();
+                yield return Convert.ToChar(s).ToString();
             }
         }
         if (zrl > 0) yield return zrl.ToString();
@@ -290,7 +290,7 @@ public class SfenConverter
         {
             if (k >= 0 && k <= board.Count)
             {
-                board.Insert(k, k == king[0] ? 'K' : 'k');
+                board.Insert(k, k == king[0] ? 'k' : 'K');
             }
             else
             {

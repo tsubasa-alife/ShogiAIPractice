@@ -733,7 +733,9 @@ namespace MyShogi.Model.Shogi.Core
             sb.Append(found ? " " : "- ");
 
             // --- 初期局面からの手数
-            sb.Append(gamePly.ToString());
+            //sb.Append(gamePly.ToString());
+            // 次の手が何手目かという情報にあまり意味がないので、一旦1で固定する
+            sb.Append("1");
 
             return sb.ToString();
         }
