@@ -17,12 +17,18 @@ namespace ShogiAIPractice.NN
 			// DataSetフォルダーの中にあるbinファイルを読み込む
 			var psv = PsvUtility.ReadPsv("../../../DataSet/shuffled.bin");
 			// 読み込んだデータを表示
-			foreach (var i in psv)
+			Console.WriteLine(BitConverter.ToString(psv.sfen));
+			Console.WriteLine(psv.move);
+			Console.WriteLine(psv.score);
+			Console.WriteLine(psv.gamePly);
+			Console.WriteLine(psv.game_result.ToString());
+			// psv.sfenをint配列に変換
+			var packedSfen = new int[32];
+			for (int i = 0; i < 32; i++)
 			{
-				Console.WriteLine(i);
+				packedSfen[i] = psv.sfen[i];
 			}
-
-			var sfen = SfenConverter.Unpack(psv);
+			var sfen = SfenConverter.Unpack(packedSfen);
 			Console.WriteLine(sfen);
 			Initializer.Init();
 			var position = new Position();

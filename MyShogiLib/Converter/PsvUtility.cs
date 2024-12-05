@@ -1,3 +1,4 @@
+using MyShogi.Model.Shogi.Core;
 namespace MyShogi.Model.Shogi.Converter;
 
 /// <summary>
@@ -8,24 +9,31 @@ namespace MyShogi.Model.Shogi.Converter;
 /// </summary>
 public class PsvUtility
 {
-    public static int[] ReadPsv(string path)
+    public static PackedSfenValue ReadPsv(string path)
     {
-        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
+        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
         {
-            // 256bit分だけ読み込む
-            byte[] buffer = new byte[32];
-            fs.Read(buffer, 0, 32);
-            var result = new int[32];
-            for (int i = 0; i < 32; i++)
+            using (BinaryReader reader = new BinaryReader(fs))
             {
-                result[i] = buffer[i];
+                PackedSfenValue psv = ReadPackedSfenValue(reader);
+                return psv;
             }
-            return result;
         }
     }
     
     public static void WritePsv(string path, string[] lines)
     {
         throw new NotImplementedException();
+    }
+    
+    public static PackedSfenValue ReadPackedSfenValue(BinaryReader reader)
+    {
+        PackedSfenValue psv = new PackedSfenValue();
+        psv.sfen = reader.ReadBytes(32);
+        psv.move = reader.ReadUInt16();
+        psv.score = reader.ReadInt32();
+        psv.gamePly = reader.ReadUInt16();
+        psv.game_result = reader.ReadSByte();
+        return psv;
     }
 }
