@@ -192,18 +192,18 @@ public class SfenConverter
             }
         }
         if (sym == null) throw new InvalidOperationException("Invalid piece encoding");
-        bool promoted = sym == "Gg" ? false : gen.MoveNext() && gen.Current == 1;
+        bool promoted = sym != "Gg" && (gen.MoveNext() && gen.Current == 1);
         char[] symCharArray = sym.ToCharArray();
         char piece = symCharArray[gen.MoveNext() && gen.Current == 1 ? 1 : 0];
         return promoted ? "+" + piece : piece.ToString();
     }
 
-    public static IEnumerable<string> UnpackCompactRow(IEnumerable<int> row)
+    public static IEnumerable<string> UnpackCompactRow(IEnumerable<string> row)
     {
         int zrl = 0;
         foreach (var s in row)
         {
-            if (s == 0)
+            if (s == "0")
             {
                 zrl++;
             }
@@ -214,13 +214,14 @@ public class SfenConverter
                     yield return zrl.ToString();
                     zrl = 0;
                 }
-                yield return Convert.ToChar(s).ToString();
+
+                yield return s;
             }
         }
         if (zrl > 0) yield return zrl.ToString();
     }
 
-    public static string UnpackBoard(IEnumerable<int> flatboard)
+    public static string UnpackBoard(IEnumerable<string> flatboard)
     {
         var rows = new List<string>();
         for (int y = 0; y < 9; y++)
@@ -280,17 +281,17 @@ public class SfenConverter
         char turn = gen.Current == 0 ? 'b' : 'w';
         int[] king = { Bits2Int(gen, 7), Bits2Int(gen, 7) };
         Array.Sort(king);
-        var board = new List<int>();
+        var board = new List<string>();
         for (int i = 0; i < 79; i++)
         {
             gen.MoveNext();
-            board.Add(gen.Current == 1 ? Bits2Piece(gen).First() : 0);
+            board.Add(gen.Current == 1 ? Bits2Piece(gen) : "0");
         }
         foreach (var k in king)
         {
             if (k >= 0 && k <= board.Count)
             {
-                board.Insert(k, k == king[0] ? 'k' : 'K');
+                board.Insert(k, k == king[0] ? "k" : "K");
             }
             else
             {

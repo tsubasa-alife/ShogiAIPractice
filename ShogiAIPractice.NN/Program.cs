@@ -12,6 +12,7 @@ namespace ShogiAIPractice.NN
 	{
 		static void Main(string[] args)
 		{
+			Initializer.Init();
 			// 現在のディレクトリを表示
 			Console.WriteLine(Directory.GetCurrentDirectory());
 			// DataSetフォルダーの中にあるbinファイルを読み込む
@@ -19,21 +20,22 @@ namespace ShogiAIPractice.NN
 			Console.WriteLine($"psvList.Count: {psvList.Count}");
 			var psvData = psvList[0];
 			// 読み込んだデータを表示
-			Console.WriteLine(psvData.sfen);
-			Console.WriteLine(psvData.move);
-			Console.WriteLine(psvData.score);
-			Console.WriteLine(psvData.gamePly);
-			Console.WriteLine(psvData.gameResult);
 			// psv.sfenをint配列に変換
 			var packedSfen = new int[32];
 			for (int i = 0; i < 32; i++)
 			{
 				packedSfen[i] = psvData.sfen[i];
 			}
+			// packedSfenをスペース区切りの文字列に変換
+			var packedSfenStr = string.Join(" ", packedSfen);
+			Console.WriteLine($"packedSfen: {packedSfenStr}");
+			Console.WriteLine($"psvData.move: {psvData.move}");
+			Console.WriteLine($"psvData.score: {psvData.score}");
+			Console.WriteLine($"psvData.gamePly: {psvData.gamePly}");
+			Console.WriteLine($"psvData.gameResult: {psvData.gameResult}");
 
 			var sfen = SfenConverter.Unpack(packedSfen);
-			Console.WriteLine(sfen);
-			Initializer.Init();
+			Console.WriteLine($"sfen: {sfen}");
 			var position = new Position();
 			position.InitBoard();
 			position.SetSfen(sfen);
