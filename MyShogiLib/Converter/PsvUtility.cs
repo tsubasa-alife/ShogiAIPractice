@@ -33,10 +33,10 @@ public class PsvUtility
     public static PackedSfenValue ReadPackedSfenValue(BinaryReader reader)
     {
         PackedSfenValue psv = new PackedSfenValue();
-        psv.sfen = new sbyte[32];
+        psv.packedSfen = new int[32];
         for (int i = 0; i < 32; i++)
         {
-            psv.sfen[i] = reader.ReadSByte();
+            psv.packedSfen[i] = reader.ReadSByte();
         }
         psv.move = reader.ReadUInt16();
         psv.score = reader.ReadInt16();

@@ -184,7 +184,7 @@ public class SfenConverter
         int x = 0;
         for (int i = 0; i < 32; i++)
         {
-            gen.MoveNext();
+            if (!gen.MoveNext()) throw new InvalidOperationException("Not enough bits to decode piece");
             x = (x << 1) | gen.Current;
             if (HuffmanInvert.TryGetValue(x, out sym))
             {
@@ -299,10 +299,18 @@ public class SfenConverter
             }
         }
         var hands = new List<string>();
-        while (gen.MoveNext())
+        while (true)
         {
-            hands.Add(Bits2Piece(gen));
+            try
+            {
+                hands.Add(Bits2Piece(gen));
+            }
+            catch (Exception e)
+            {
+                break;
+            }
         }
+        
         return $"{UnpackBoard(board)} {turn} {UnpackHands(hands)} {ply}";
     }
 }
