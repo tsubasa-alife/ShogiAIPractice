@@ -36,7 +36,7 @@ public class PsvUtility
         psv.packedSfen = new int[32];
         for (int i = 0; i < 32; i++)
         {
-            psv.packedSfen[i] = reader.ReadSByte();
+            psv.packedSfen[i] = reader.ReadByte();
         }
         psv.move = reader.ReadUInt16();
         psv.score = reader.ReadInt16();
