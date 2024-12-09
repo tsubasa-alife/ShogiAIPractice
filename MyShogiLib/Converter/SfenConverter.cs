@@ -182,9 +182,8 @@ public class SfenConverter
     {
         string sym = null;
         int x = 0;
-        for (int i = 0; i < 32; i++)
+        while (gen.MoveNext())
         {
-            if (!gen.MoveNext()) throw new InvalidOperationException("Not enough bits to decode piece");
             x = (x << 1) | gen.Current;
             if (HuffmanInvert.TryGetValue(x, out sym))
             {
