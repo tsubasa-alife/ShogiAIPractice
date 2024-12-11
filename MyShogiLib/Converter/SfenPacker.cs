@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MyShogi.Model.Shogi.Core;
 namespace MyShogi.Model.Shogi.Converter;
 	
@@ -124,7 +125,125 @@ public class SfenPacker
 	public static byte[] data = new byte[32];
 	public static BitStream bitStream = new BitStream();
 	
-	// 盤面の駒をstreamに出力する。
+	public static void Pack(Position pos)
+	{
+		// Aperyの駒の並び順
+		Piece[] toAperyPieces = { Piece.NO_PIECE, Piece.PAWN, Piece.LANCE, Piece.KNIGHT, Piece.SILVER, Piece.GOLD, Piece.BISHOP, Piece.ROOK };
+
+		// 駒箱枚数
+		int[] hpCount = { 0, 18, 4, 4, 4, 4, 2, 2 };
+
+		Array.Clear(data, 0, data.Length);
+		bitStream.SetData(data);
+
+		// 手番
+		bitStream.WriteOneBit((int)pos.sideToMove);
+
+		// 先手玉、後手玉の位置、それぞれ7bit
+		foreach (Color c in Enum.GetValues(typeof(Color)))
+		{
+			bitStream.WriteNBit((int)pos.KingSquare(c), 7);
+		}
+
+		// 盤面の駒は王以外はそのまま書き出して良し！
+		foreach (Square sq in Enum.GetValues(typeof(Square)))
+		{
+			Piece pc = pos.PieceOn(sq);
+			if (pc.PieceType() == Piece.KING)
+				continue;
+			WriteBoardPieceToStream(pc);
+
+			// 駒箱から減らす
+			hpCount[(int)pc.RawPieceType()]--;
+		}
+
+		// 手駒をハフマン符号化して書き出し
+		foreach (Color c in Enum.GetValues(typeof(Color)))
+		{
+			for (Piece pr = Piece.PAWN; pr < Piece.KING; pr++)
+			{
+				Piece pr2 = toAperyPieces[(int)pr];
+				int n = pos.Hand(c).Count(pr2);
+
+				for (int i = 0; i < n; i++)
+				{
+					WriteHandPieceToStream(Util.MakePiece(c, pr2));
+				}
+
+				// 駒箱から減らす
+				hpCount[(int)pr2] -= n;
+			}
+		}
+
+		// 最後に駒箱の分を出力
+		for (Piece pr = Piece.PAWN; pr < Piece.KING; pr++)
+		{
+			Piece pr2 = toAperyPieces[(int)pr];
+			int n = hpCount[(int)pr2];
+
+			for (int i = 0; i < n; i++)
+			{
+				WritePieceBoxPieceToStream(pr2);
+			}
+		}
+
+		// 全部で256bitのはず。(普通の盤面であれば)
+		Debug.Assert(bitStream.GetCursor() == 256);
+	}
+	
+	public static string Unpack()
+	{
+		bitStream.SetData(data);
+
+		// 盤上の81升
+		Piece[] board = new Piece[81];
+		Array.Fill(board, Piece.NO_PIECE);
+
+		// 手番
+		Color turn = (Color)bitStream.ReadOneBit();
+
+		// まず玉の位置
+		foreach (Color c in Enum.GetValues(typeof(Color)))
+		{
+			board[bitStream.ReadNBit(7)] = Util.MakePiece(c, Piece.KING);
+		}
+
+		// 盤上の駒
+		foreach (Square sq in Enum.GetValues(typeof(Square)))
+		{
+			// すでに玉がいるようだ
+			if (board[(int)sq].PieceType() == Piece.KING)
+				continue;
+
+			board[(int)sq] = ReadBoardPieceFromStream();
+
+			Debug.Assert(bitStream.GetCursor() <= 256);
+		}
+
+		// 手駒
+		Hand[] hand = { Hand.ZERO, Hand.ZERO };
+		while (bitStream.GetCursor() != 256)
+		{
+			// 256になるまで手駒か駒箱の駒が格納されているはず
+			Piece pc = ReadHandPieceFromStream();
+
+			// 成り駒が返ってきたら、これは駒箱の駒。
+			if (pc.IsPromote())
+				continue;
+
+			hand[(int)pc.PieceColor()].Add(pc.RawPieceType());
+		}
+
+		// boardとhandが確定した。これで局面を構築できる…かも。
+		// Position::sfen()は、board,hand,side_to_move,game_plyしか参照しないので
+		// 無理やり代入してしまえば、sfen()で文字列化できるはず。
+
+		return Position.SfenFromRawdata(board, hand, turn, 0);
+	}
+	
+	/// <summary>
+	/// 盤面の駒をstreamに出力する
+	/// </summary>
 	public static void WriteBoardPieceToStream(Piece pc)
 	{
 		// 駒種
@@ -142,5 +261,142 @@ public class SfenPacker
 
 		// 先後フラグ
 		bitStream.WriteOneBit((int)pc.PieceColor());
+	}
+	
+	/// <summary>
+	/// 手駒をstreamに出力する
+	/// </summary>
+	public static void WriteHandPieceToStream(Piece pc)
+	{
+		if (pc == Piece.NO_PIECE)
+		{
+			throw new ArgumentException("Piece cannot be NO_PIECE", nameof(pc));
+		}
+
+		// Piece type
+		Piece pr = pc.RawPieceType();
+		HuffmanedPiece c = HuffmanTables.HuffmanTable[(int)pr];
+		bitStream.WriteNBit(c.Code >> 1, c.Bits - 1);
+
+		// For pieces other than GOLD, output the promotion flag (unpromoted) to maintain the same bit count as board pieces
+		if (pr != Piece.GOLD)
+		{
+			bitStream.WriteOneBit(0);
+		}
+
+		// Color flag
+		bitStream.WriteOneBit((int)pc.PieceColor());
+	}
+	
+	/// <summary>
+	/// 駒箱の駒をstreamに出力する
+	/// </summary>
+	public static void WritePieceBoxPieceToStream(Piece pr)
+	{
+		if (pr == Piece.NO_PIECE)
+		{
+			throw new ArgumentException("PieceType cannot be NO_PIECE_TYPE", nameof(pr));
+		}
+
+		// Piece type
+		HuffmanedPiece c = HuffmanTables.HuffmanTablePieceBox[(int)pr];
+		bitStream.WriteNBit(c.Code, c.Bits);
+
+		// Output the promotion flag, so this ends the promotion part.
+
+		// Write the color flag as 0. For GOLD, this flag is consumed (treated as a piece of the opponent), so this ends here.
+		if (pr != Piece.GOLD)
+		{
+			bitStream.WriteOneBit(0);
+		}
+	}
+	
+	/// <summary>
+	/// Streamから盤面の駒を読み込む
+	/// </summary>
+	public static Piece ReadBoardPieceFromStream()
+	{
+		Piece pr = Piece.NO_PIECE;
+		int code = 0, bits = 0;
+		while (true)
+		{
+			code |= bitStream.ReadOneBit() << bits;
+			++bits;
+
+			if (bits > 6)
+			{
+				throw new InvalidOperationException("Bits exceeded the maximum allowed value.");
+			}
+
+			for (pr = Piece.NO_PIECE; pr < Piece.KING; ++pr)
+			{
+				if (HuffmanTables.HuffmanTable[(int)pr].Code == code &&
+				    HuffmanTables.HuffmanTable[(int)pr].Bits == bits)
+				{
+					goto Found;
+				}
+			}
+		}
+		Found:
+		if (pr == Piece.NO_PIECE)
+		{
+			return Piece.NO_PIECE;
+		}
+
+		// Promotion flag
+		bool promote = (pr == Piece.GOLD) ? false : bitStream.ReadOneBit() == 1;
+
+		// Color flag
+		Color c = (Color)bitStream.ReadOneBit();
+
+		return Util.MakePiece(c, pr + (int)(promote ? Piece.PROMOTE : Piece.NO_PIECE));
+	}
+	
+	/// <summary>
+	/// Streamから手駒の駒を読み込む
+	/// </summary>
+	public static Piece ReadHandPieceFromStream()
+	{
+		Piece pr = Piece.NO_PIECE;
+		int code = 0, bits = 0;
+		while (true)
+		{
+			code |= bitStream.ReadOneBit() << bits;
+			++bits;
+
+			if (bits > 6)
+			{
+				throw new InvalidOperationException("Bits exceeded the maximum allowed value.");
+			}
+
+			for (pr = Piece.PAWN; pr < Piece.KING; ++pr)
+			{
+				if ((HuffmanTables.HuffmanTable[(int)pr].Code >> 1) == code &&
+				    (HuffmanTables.HuffmanTable[(int)pr].Bits - 1) == bits)
+				{
+					goto Found;
+				}
+			}
+		}
+		Found:
+		if (pr == Piece.NO_PIECE)
+		{
+			throw new InvalidOperationException("Piece type cannot be NO_PIECE.");
+		}
+
+		// For pieces other than GOLD, discard the promotion flag (if this is 1, it is a piece from the piece box, so return a promoted piece)
+		if (pr != Piece.GOLD)
+		{
+			bool promote = bitStream.ReadOneBit() == 1;
+			if (promote)
+			{
+				pr = pr.ToPromotePiece();
+			}
+		}
+
+		// Color flag
+		Color c = (Color)bitStream.ReadOneBit();
+
+		return Util.MakePiece(c, pr);
 	}
 }
