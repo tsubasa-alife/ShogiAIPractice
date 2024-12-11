@@ -52,9 +52,9 @@ namespace MyShogiLib.Tests
 			Assert.Equal(Sfens.HIRATE, position.ToSfen());
 			
 			// 平手盤面をpackしてunpackしてみる
-			var packedSfen = SfenConverter.Pack(position.ToSfen());
+			SfenPacker.Pack(position);
 			var position2 = new Position();
-			var sfen = SfenConverter.Unpack(packedSfen);
+			var sfen = SfenPacker.Unpack();
 			position2.SetSfen(sfen);
 			
 			// 正しく復元できているか？
@@ -64,9 +64,9 @@ namespace MyShogiLib.Tests
 			position2.DoMove(Usi.ToMove("7g7f"));
 			
 			// 1手指した局面についてもpackしてunpackしてみる
-			var packedSfen2 = SfenConverter.Pack(position2.ToSfen());
+			SfenPacker.Pack(position2);
 			var position3 = new Position();
-			var sfen2 = SfenConverter.Unpack(packedSfen2);
+			var sfen2 = SfenPacker.Unpack();
 			position3.SetSfen(sfen2);
 			
 			// 正しく復元できているか？
