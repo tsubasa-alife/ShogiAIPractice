@@ -241,6 +241,15 @@ public class SfenPacker
 		return Position.SfenFromRawdata(board, hand, turn, 0);
 	}
 	
+	public static void SetData(byte[] newData)
+	{
+		if (newData.Length != SfenPacker.data.Length)
+		{
+			throw new ArgumentException("newData.Length must be 32", nameof(newData));
+		}
+		Array.Copy(newData, SfenPacker.data,newData.Length);
+	}
+	
 	/// <summary>
 	/// 盤面の駒をstreamに出力する
 	/// </summary>

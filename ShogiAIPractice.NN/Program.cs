@@ -31,7 +31,8 @@ namespace ShogiAIPractice.NN
 			Console.WriteLine($"psvData.gamePly: {psvData.gamePly}");
 			Console.WriteLine($"psvData.gameResult: {psvData.gameResult}");
 
-			var sfen = SfenConverter.Unpack(psvData.packedSfen);
+			SfenPacker.SetData(psvData.packedSfen);
+			var sfen = SfenPacker.Unpack();
 			Console.WriteLine($"sfen: {sfen}");
 			var position = new Position();
 			position.InitBoard();

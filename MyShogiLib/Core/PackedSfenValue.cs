@@ -5,7 +5,7 @@ namespace MyShogi.Model.Shogi.Core
 	public struct PackedSfenValue
 	{
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public int[] packedSfen;
+		public byte[] packedSfen;
 		public UInt16 move;
 		public Int16 score;
 		public UInt16 gamePly;
