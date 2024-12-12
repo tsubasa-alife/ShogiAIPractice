@@ -44,14 +44,14 @@ public class BitStream
 			data[bitCursor / 8] |= (byte)(1 << (bitCursor & 7));
 		}
 
-		bitCursor++;
+		++bitCursor;
 	}
 
 	// ストリームから1ビット取り出す。
 	public int ReadOneBit()
 	{
 		int b = (data[bitCursor / 8] >> (bitCursor & 7)) & 1;
-		bitCursor++;
+		++bitCursor;
 		return b;
 	}
 
@@ -131,7 +131,7 @@ public class SfenPacker
 		Piece[] toAperyPieces = { Piece.NO_PIECE, Piece.PAWN, Piece.LANCE, Piece.KNIGHT, Piece.SILVER, Piece.GOLD, Piece.BISHOP, Piece.ROOK };
 
 		// 駒箱枚数
-		int[] hpCount = { 0, 18, 4, 4, 4, 4, 2, 2 };
+		int[] hpCount = { 0, 18, 4, 4, 4, 2, 2, 4 };
 
 		Array.Clear(data, 0, data.Length);
 		bitStream.SetData(data);
@@ -140,13 +140,13 @@ public class SfenPacker
 		bitStream.WriteOneBit((int)pos.sideToMove);
 
 		// 先手玉、後手玉の位置、それぞれ7bit
-		foreach (Color c in Enum.GetValues(typeof(Color)))
+		foreach (Color c in All.Colors())
 		{
 			bitStream.WriteNBit((int)pos.KingSquare(c), 7);
 		}
 
 		// 盤面の駒は王以外はそのまま書き出して良し！
-		foreach (Square sq in Enum.GetValues(typeof(Square)))
+		foreach (Square sq in All.Squares())
 		{
 			Piece pc = pos.PieceOn(sq);
 			if (pc.PieceType() == Piece.KING)
@@ -158,7 +158,7 @@ public class SfenPacker
 		}
 
 		// 手駒をハフマン符号化して書き出し
-		foreach (Color c in Enum.GetValues(typeof(Color)))
+		foreach (Color c in All.Colors())
 		{
 			for (Piece pr = Piece.PAWN; pr < Piece.KING; pr++)
 			{
@@ -203,13 +203,13 @@ public class SfenPacker
 		Color turn = (Color)bitStream.ReadOneBit();
 
 		// まず玉の位置
-		foreach (Color c in Enum.GetValues(typeof(Color)))
+		foreach (Color c in All.Colors())
 		{
 			board[bitStream.ReadNBit(7)] = Util.MakePiece(c, Piece.KING);
 		}
 
 		// 盤上の駒
-		foreach (Square sq in Enum.GetValues(typeof(Square)))
+		foreach (Square sq in All.Squares())
 		{
 			// すでに玉がいるようだ
 			if (board[(int)sq].PieceType() == Piece.KING)
