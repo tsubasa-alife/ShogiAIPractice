@@ -145,7 +145,7 @@ public class SfenPacker
 			bitStream.WriteNBit((int)pos.KingSquare(c), 7);
 		}
 
-		// 盤面の駒は王以外はそのまま書き出して良し！
+		// 盤面の駒は王以外はそのまま書き出す
 		foreach (Square sq in All.Squares())
 		{
 			Piece pc = pos.PieceOn(sq);
@@ -211,7 +211,7 @@ public class SfenPacker
 		// 盤上の駒
 		foreach (Square sq in All.Squares())
 		{
-			// すでに玉がいるようだ
+			// すでに玉がいる
 			if (board[(int)sq].PieceType() == Piece.KING)
 				continue;
 
@@ -233,10 +233,6 @@ public class SfenPacker
 
 			hand[(int)pc.PieceColor()].Add(pc.RawPieceType());
 		}
-
-		// boardとhandが確定した。これで局面を構築できる…かも。
-		// Position::sfen()は、board,hand,side_to_move,game_plyしか参照しないので
-		// 無理やり代入してしまえば、sfen()で文字列化できるはず。
 
 		return Position.SfenFromRawdata(board, hand, turn, 0);
 	}
@@ -281,19 +277,16 @@ public class SfenPacker
 		{
 			throw new ArgumentException("Piece cannot be NO_PIECE", nameof(pc));
 		}
-
-		// Piece type
+		
 		Piece pr = pc.RawPieceType();
 		HuffmanedPiece c = HuffmanTables.HuffmanTable[(int)pr];
 		bitStream.WriteNBit(c.Code >> 1, c.Bits - 1);
-
-		// For pieces other than GOLD, output the promotion flag (unpromoted) to maintain the same bit count as board pieces
+		
 		if (pr != Piece.GOLD)
 		{
 			bitStream.WriteOneBit(0);
 		}
-
-		// Color flag
+		
 		bitStream.WriteOneBit((int)pc.PieceColor());
 	}
 	
@@ -306,14 +299,10 @@ public class SfenPacker
 		{
 			throw new ArgumentException("PieceType cannot be NO_PIECE_TYPE", nameof(pr));
 		}
-
-		// Piece type
+		
 		HuffmanedPiece c = HuffmanTables.HuffmanTablePieceBox[(int)pr];
 		bitStream.WriteNBit(c.Code, c.Bits);
-
-		// Output the promotion flag, so this ends the promotion part.
-
-		// Write the color flag as 0. For GOLD, this flag is consumed (treated as a piece of the opponent), so this ends here.
+		
 		if (pr != Piece.GOLD)
 		{
 			bitStream.WriteOneBit(0);
@@ -351,11 +340,9 @@ public class SfenPacker
 		{
 			return Piece.NO_PIECE;
 		}
-
-		// Promotion flag
+		
 		bool promote = (pr == Piece.GOLD) ? false : bitStream.ReadOneBit() == 1;
-
-		// Color flag
+		
 		Color c = (Color)bitStream.ReadOneBit();
 
 		return Util.MakePiece(c, pr + (int)(promote ? Piece.PROMOTE : Piece.NO_PIECE));
@@ -392,8 +379,7 @@ public class SfenPacker
 		{
 			throw new InvalidOperationException("Piece type cannot be NO_PIECE.");
 		}
-
-		// For pieces other than GOLD, discard the promotion flag (if this is 1, it is a piece from the piece box, so return a promoted piece)
+		
 		if (pr != Piece.GOLD)
 		{
 			bool promote = bitStream.ReadOneBit() == 1;
@@ -402,8 +388,7 @@ public class SfenPacker
 				pr = pr.ToPromotePiece();
 			}
 		}
-
-		// Color flag
+		
 		Color c = (Color)bitStream.ReadOneBit();
 
 		return Util.MakePiece(c, pr);
